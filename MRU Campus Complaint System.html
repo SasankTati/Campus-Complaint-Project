@@ -1,0 +1,152 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>MRU Campus Complaint System</title>
+<style>
+:root{--bg:#f6f7fb;--cd:#fff;--tx:#1b1f2a;--mu:#6b7280;--bd:#dfe3ec;--ac:#4f46e5;--ok:#16a34a;--wa:#d97706;--er:#dc2626;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12141c;--cd:#1c1f2b;--tx:#e8eaf2;--mu:#9aa1b2;--bd:#2d3243;--ac:#818cf8;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#12141c;--cd:#1c1f2b;--tx:#e8eaf2;--mu:#9aa1b2;--bd:#2d3243;--ac:#818cf8;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans Telugu","Noto Sans Devanagari",sans-serif}
+header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--cd);border-bottom:1px solid var(--bd)}
+h1{font-size:17px;margin:0}main{max-width:960px;margin:0 auto;padding:14px}
+nav{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px}nav button{white-space:nowrap}
+button,select,input,textarea{font:inherit;color:var(--tx);background:var(--cd);border:1px solid var(--bd);border-radius:8px;padding:7px 10px}
+button{cursor:pointer}button.p{background:var(--ac);color:#fff;border-color:var(--ac)}nav button.on{background:var(--ac);color:#fff}
+textarea,input[type=text],input:not([type]),select{width:100%}label{display:block;font-size:13px;color:var(--mu);margin:8px 0 3px}
+.cd{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px}
+.r{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.r>*{flex:1 1 140px}.s{font-size:12px;color:var(--mu)}
+.b{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;border:1px solid var(--bd)}
+.High{color:var(--er)}.Medium{color:var(--wa)}.Low{color:var(--ok)}.bar{height:10px;background:var(--ac);border-radius:5px}
+.cm{border-left:3px solid var(--bd);padding-left:8px;margin:4px 0;font-size:14px}
+#toast{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));display:grid;gap:6px;z-index:9;pointer-events:none}
+#toast div{background:var(--tx);color:var(--bg);padding:8px 12px;border-radius:8px;font-size:13px}
+img.at{max-width:160px;border-radius:8px;display:block;margin-top:6px}details{margin:6px 0}
+@media print{header,nav,.np{display:none}}
+</style></head><body>
+<header><h1 id="ti"></h1><div class="r np" id="hd" style="flex:0 1 auto"></div></header>
+<main id="app"></main><div id="toast"></div>
+<script>
+const CATS={Hostel:"Hostel Warden Office",Mess:"Mess Committee",Transport:"Transport Office",Academics:"Academic Section","IT / Wi-Fi":"IT Services",Infrastructure:"Estate & Maintenance","Safety / Harassment":"Student Welfare Cell"};
+const KW={Hostel:"hostel room warden bed",Mess:"mess food canteen meal dinner lunch breakfast",Transport:"bus transport driver route",Academics:"exam marks class faculty attendance timetable","IT / Wi-Fi":"wifi wi-fi internet network portal lms",Infrastructure:"fan light water leak toilet lift broken bench ac","Safety / Harassment":"ragging harass threat unsafe fight abuse"};
+const URG="fire shock danger unsafe ragging harass threat injury emergency urgent";
+const T={en:{file:"New complaint",mine:"My complaints",feed:"Public feed",faq:"FAQ",queue:"Queue",stats:"Analytics",audit:"Audit log",submit:"Submit"},
+te:{file:"కొత్త ఫిర్యాదు",mine:"నా ఫిర్యాదులు",feed:"పబ్లిక్ ఫీడ్",faq:"తరచుగా అడిగే ప్రశ్నలు",queue:"క్యూ",stats:"విశ్లేషణ",audit:"ఆడిట్",submit:"సమర్పించు",
+"MRU Complaint Portal":"MRU ఫిర్యాదుల పోర్టల్","Log out":"లాగ్ అవుట్","Sign in":"సైన్ ఇన్","University ID or email":"యూనివర్సిటీ ID లేదా ఇమెయిల్","Role":"పాత్ర","Student":"విద్యార్థి","Department staff":"విభాగ సిబ్బంది","Admin":"అడ్మిన్","Quick demo:":"త్వరిత డెమో:","Staff":"సిబ్బంది","Notifications":"నోటిఫికేషన్లు","None yet":"ఇంకా ఏమీ లేవు","ago":"క్రితం","d":"రో","h":"గం","points":"పాయింట్లు",
+"Simulate +3 days":"+3 రోజులు సిమ్యులేట్ చేయండి","Copy CSV":"CSV కాపీ చేయండి","Export PDF":"PDF ఎగుమతి","Search…":"వెతకండి…","All statuses":"అన్ని స్థితులు","All categories":"అన్ని వర్గాలు",
+"Submitted":"సమర్పించబడింది","In Progress":"ప్రగతిలో ఉంది","Resolved":"పరిష్కరించబడింది","Low":"తక్కువ","Medium":"మధ్యస్థం","High":"అధికం","Escalated":"ఉన్నత స్థాయికి పంపబడింది",
+"Me too":"నాకూ ఇదే","Add a comment":"వ్యాఖ్య జోడించండి","Send":"పంపండి","Student rating:":"విద్యార్థి రేటింగ్:","Your rating:":"మీ రేటింగ్:","Was it fixed properly?":"సరిగ్గా పరిష్కరించబడిందా?","No location":"స్థానం లేదు","by":"ద్వారా","Anonymous":"అజ్ఞాత","Unassigned":"కేటాయించలేదు","Nothing matches.":"ఏదీ సరిపోలలేదు.",
+"Describe your problem":"మీ సమస్యను వివరించండి","The assistant suggests a category and priority from your words.":"మీ మాటల ఆధారంగా అసిస్టెంట్ వర్గం మరియు ప్రాధాన్యతను సూచిస్తుంది.","e.g. no water in hostel toilet since morning":"ఉదా. ఉదయం నుండి హాస్టల్ టాయిలెట్‌లో నీళ్లు లేవు","Suggest":"సూచించు",
+"Category (auto-routes to the department)":"వర్గం (విభాగానికి ఆటోమేటిక్‌గా వెళ్తుంది)","Description":"వివరణ","Dictate":"మాట్లాడి రాయండి","Block":"బ్లాక్","Floor":"అంతస్తు","Room":"గది","Priority":"ప్రాధాన్యత","Photo (under 300 KB)":"ఫోటో (300 KB లోపు)","File anonymously (hidden from staff and feed)":"అజ్ఞాతంగా ఫిర్యాదు చేయండి (సిబ్బంది, ఫీడ్‌కు కనిపించదు)",
+"Similar open complaints found":"ఇలాంటి ఫిర్యాదులు ఇప్పటికే ఉన్నాయి","Submit anyway":"అయినా సమర్పించు","Public view: names and attachments are hidden.":"పబ్లిక్ వీక్షణ: పేర్లు మరియు అటాచ్‌మెంట్లు దాచబడ్డాయి.",
+"How long until I get a reply?":"నాకు ఎంత సమయంలో స్పందన వస్తుంది?","High priority: 1 day, Medium: 3 days, Low: 7 days. After that the ticket auto-escalates to admin.":"అధిక ప్రాధాన్యత: 1 రోజు, మధ్యస్థం: 3 రోజులు, తక్కువ: 7 రోజులు. ఆ తర్వాత టికెట్ ఆటోమేటిక్‌గా అడ్మిన్‌కు వెళ్తుంది.",
+"Is anonymous filing really anonymous?":"అజ్ఞాత ఫిర్యాదు నిజంగా అజ్ఞాతమేనా?","Staff, admin and the public feed never see your ID on anonymous tickets.":"అజ్ఞాత టికెట్లలో మీ ID సిబ్బందికి, అడ్మిన్‌కు, పబ్లిక్ ఫీడ్‌కు కనిపించదు.",
+"Can I add proof?":"నేను రుజువు జోడించవచ్చా?","Yes, attach a photo of up to 300 KB.":"అవును, 300 KB వరకు ఫోటో జోడించవచ్చు.","What if someone already reported it?":"ఇప్పటికే ఎవరైనా ఫిర్యాదు చేసి ఉంటే?","Use Me too instead of filing a duplicate.":"కొత్తగా ఫైల్ చేయకుండా “నాకూ ఇదే” నొక్కండి.",
+"Total":"మొత్తం","Open":"తెరిచినవి","Avg resolution":"సగటు పరిష్కార సమయం","Avg rating":"సగటు రేటింగ్","Complaints by category":"వర్గాల వారీగా ఫిర్యాదులు",
+"Hash chain verified: no entry has been altered":"హాష్ చైన్ ధృవీకరించబడింది: ఏ ఎంట్రీ మార్చబడలేదు","Chain broken":"చైన్ విరిగింది","each entry hashes the previous one, a lightweight blockchain-style seal":"ప్రతి ఎంట్రీ ముందుదాని హాష్‌ను కలిగి ఉంటుంది",
+"Hostel":"హాస్టల్","Mess":"మెస్","Transport":"రవాణా","Academics":"విద్యా విభాగం","IT / Wi-Fi":"IT / వైఫై","Infrastructure":"మౌలిక సదుపాయాలు","Safety / Harassment":"భద్రత / వేధింపులు",
+"Hostel Warden Office":"హాస్టల్ వార్డెన్ కార్యాలయం","Mess Committee":"మెస్ కమిటీ","Transport Office":"రవాణా కార్యాలయం","Academic Section":"అకడమిక్ విభాగం","IT Services":"IT సేవలు","Estate & Maintenance":"ఎస్టేట్ & నిర్వహణ","Student Welfare Cell":"విద్యార్థి సంక్షేమ విభాగం",
+"New":"కొత్త","Voice":"గళం","Campus Helper":"క్యాంపస్ సహాయకుడు","Champion":"ఛాంపియన్",
+"Enter a valid university ID (8 to 12 characters) or email":"చెల్లుబాటు అయ్యే యూనివర్సిటీ ID (8–12 అక్షరాలు) లేదా ఇమెయిల్ ఇవ్వండి","Please describe the issue in a few more words":"దయచేసి సమస్యను మరికొన్ని మాటల్లో వివరించండి","Already added":"ఇప్పటికే జోడించబడింది","Suggested:":"సూచన:","Voice input is not supported in this browser":"ఈ బ్రౌజర్‌లో వాయిస్ ఇన్‌పుట్ పనిచేయదు","Could not capture voice":"వాయిస్ తీసుకోలేకపోయింది","Listening…":"వింటోంది…","CSV copied. Paste into Excel or Sheets":"CSV కాపీ అయింది. Excel లేదా Sheetsలో పేస్ట్ చేయండి","Clipboard blocked in this view":"ఈ వీక్షణలో క్లిప్‌బోర్డ్ నిరోధించబడింది","Print blocked in this view":"ఈ వీక్షణలో ప్రింట్ నిరోధించబడింది","Submitted as":"ఇలా సమర్పించబడింది:","SMS/WhatsApp (simulated)":"SMS/WhatsApp (అనుకరణ)",
+"routed to":"కి పంపబడింది","is now":"ఇప్పుడు","New comment on":"కొత్త వ్యాఖ్య:","unresolved past deadline, escalated to admin":"గడువు దాటింది, అడ్మిన్‌కు పంపబడింది"},
+hi:{file:"नई शिकायत",mine:"मेरी शिकायतें",feed:"पब्लिक फीड",faq:"अक्सर पूछे सवाल",queue:"कतार",stats:"विश्लेषण",audit:"ऑडिट",submit:"जमा करें",
+"MRU Complaint Portal":"MRU शिकायत पोर्टल","Log out":"लॉग आउट","Sign in":"साइन इन","University ID or email":"यूनिवर्सिटी ID या ईमेल","Role":"भूमिका","Student":"छात्र","Department staff":"विभाग स्टाफ","Admin":"एडमिन","Quick demo:":"त्वरित डेमो:","Staff":"स्टाफ","Notifications":"सूचनाएँ","None yet":"अभी कोई नहीं","ago":"पहले","d":"दिन","h":"घं","points":"अंक",
+"Simulate +3 days":"+3 दिन सिम्युलेट करें","Copy CSV":"CSV कॉपी करें","Export PDF":"PDF एक्सपोर्ट","Search…":"खोजें…","All statuses":"सभी स्थितियाँ","All categories":"सभी श्रेणियाँ",
+"Submitted":"जमा किया गया","In Progress":"प्रगति में","Resolved":"हल हो गया","Low":"कम","Medium":"मध्यम","High":"उच्च","Escalated":"उच्च स्तर पर भेजा गया",
+"Me too":"मेरे साथ भी","Add a comment":"टिप्पणी जोड़ें","Send":"भेजें","Student rating:":"छात्र रेटिंग:","Your rating:":"आपकी रेटिंग:","Was it fixed properly?":"क्या ठीक से हल हुआ?","No location":"स्थान नहीं","by":"द्वारा","Anonymous":"गुमनाम","Unassigned":"असाइन नहीं","Nothing matches.":"कुछ नहीं मिला।",
+"Describe your problem":"अपनी समस्या बताएँ","The assistant suggests a category and priority from your words.":"आपके शब्दों से असिस्टेंट श्रेणी और प्राथमिकता सुझाता है।","e.g. no water in hostel toilet since morning":"जैसे सुबह से हॉस्टल के टॉयलेट में पानी नहीं है","Suggest":"सुझाएँ",
+"Category (auto-routes to the department)":"श्रेणी (विभाग को अपने आप भेजी जाती है)","Description":"विवरण","Dictate":"बोलकर लिखें","Block":"ब्लॉक","Floor":"मंज़िल","Room":"कमरा","Priority":"प्राथमिकता","Photo (under 300 KB)":"फ़ोटो (300 KB से कम)","File anonymously (hidden from staff and feed)":"गुमनाम रूप से शिकायत करें (स्टाफ और फ़ीड से छिपी)",
+"Similar open complaints found":"मिलती-जुलती खुली शिकायतें मिलीं","Submit anyway":"फिर भी जमा करें","Public view: names and attachments are hidden.":"सार्वजनिक दृश्य: नाम और अटैचमेंट छिपे हैं।",
+"How long until I get a reply?":"मुझे जवाब कितने समय में मिलेगा?","High priority: 1 day, Medium: 3 days, Low: 7 days. After that the ticket auto-escalates to admin.":"उच्च प्राथमिकता: 1 दिन, मध्यम: 3 दिन, कम: 7 दिन। इसके बाद टिकट अपने आप एडमिन को चला जाता है।",
+"Is anonymous filing really anonymous?":"क्या गुमनाम शिकायत सच में गुमनाम होती है?","Staff, admin and the public feed never see your ID on anonymous tickets.":"गुमनाम टिकट पर आपकी ID स्टाफ, एडमिन और पब्लिक फ़ीड को कभी नहीं दिखती।",
+"Can I add proof?":"क्या मैं सबूत जोड़ सकता/सकती हूँ?","Yes, attach a photo of up to 300 KB.":"हाँ, 300 KB तक की फ़ोटो जोड़ सकते हैं।","What if someone already reported it?":"अगर किसी ने पहले ही शिकायत की हो तो?","Use Me too instead of filing a duplicate.":"नई शिकायत करने की जगह “मेरे साथ भी” दबाएँ।",
+"Total":"कुल","Open":"खुली","Avg resolution":"औसत समाधान समय","Avg rating":"औसत रेटिंग","Complaints by category":"श्रेणी के अनुसार शिकायतें",
+"Hash chain verified: no entry has been altered":"हैश चेन सत्यापित: कोई प्रविष्टि बदली नहीं गई","Chain broken":"चेन टूटी हुई है","each entry hashes the previous one, a lightweight blockchain-style seal":"हर प्रविष्टि पिछली प्रविष्टि का हैश रखती है",
+"Hostel":"हॉस्टल","Mess":"मेस","Transport":"परिवहन","Academics":"शैक्षणिक","IT / Wi-Fi":"IT / वाई-फ़ाई","Infrastructure":"बुनियादी ढाँचा","Safety / Harassment":"सुरक्षा / उत्पीड़न",
+"Hostel Warden Office":"हॉस्टल वार्डन कार्यालय","Mess Committee":"मेस समिति","Transport Office":"परिवहन कार्यालय","Academic Section":"शैक्षणिक अनुभाग","IT Services":"IT सेवाएँ","Estate & Maintenance":"एस्टेट और रखरखाव","Student Welfare Cell":"छात्र कल्याण प्रकोष्ठ",
+"New":"नया","Voice":"आवाज़","Campus Helper":"कैंपस सहायक","Champion":"चैंपियन",
+"Enter a valid university ID (8 to 12 characters) or email":"मान्य यूनिवर्सिटी ID (8 से 12 अक्षर) या ईमेल दर्ज करें","Please describe the issue in a few more words":"कृपया समस्या थोड़ा और विस्तार से बताएँ","Already added":"पहले ही जोड़ा जा चुका है","Suggested:":"सुझाव:","Voice input is not supported in this browser":"इस ब्राउज़र में वॉयस इनपुट समर्थित नहीं है","Could not capture voice":"आवाज़ रिकॉर्ड नहीं हो सकी","Listening…":"सुन रहा है…","CSV copied. Paste into Excel or Sheets":"CSV कॉपी हो गई। Excel या Sheets में पेस्ट करें","Clipboard blocked in this view":"इस दृश्य में क्लिपबोर्ड बंद है","Print blocked in this view":"इस दृश्य में प्रिंट बंद है","Submitted as":"इस रूप में जमा हुआ:","SMS/WhatsApp (simulated)":"SMS/WhatsApp (नकली)",
+"routed to":"को भेजा गया","is now":"अब","New comment on":"नई टिप्पणी:","unresolved past deadline, escalated to admin":"समय सीमा पार, एडमिन को भेजा गया"}};
+const TABS={student:["file","mine","feed","faq"],staff:["queue","feed","faq"],admin:["queue","stats","audit","feed","faq"]};
+const STAFF=["Unassigned","Mr. Rao","Ms. Devi","Mr. Khan"],STS=["Submitted","In Progress","Resolved"],PRI=["Low","Medium","High"],DAY=864e5,K="mru_cms_v1";
+const $=s=>document.querySelector(s),E=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const H=s=>{let h=5381;for(const c of s)h=(h*33^c.charCodeAt(0))>>>0;return h.toString(16).padStart(8,"0")};
+let S,F={q:"",st:"",cat:""},tab="",showN=0,draft={};
+try{S=JSON.parse(localStorage.getItem(K))}catch(e){}
+if(!S){const n=Date.now();S={n:1004,off:0,lang:"en",theme:"",sms:0,me:null,pts:{},notes:[],audit:[],tickets:[
+{id:"MRU-1001",cat:"Mess",dept:CATS.Mess,desc:"Dinner rice was undercooked in Block B mess for three days.",loc:"Block B, Ground, Mess",pri:"Medium",anon:0,by:"22K41A0577",at:n-DAY*1.2,status:"In Progress",asg:"Ms. Devi",ups:["a","b"],cm:[],fb:null},
+{id:"MRU-1002",cat:"Infrastructure",dept:CATS.Infrastructure,desc:"Ceiling fan not working in the room, very hot at night.",loc:"Hostel A, 2nd, 214",pri:"Low",anon:0,by:"22K41A0501",at:n-DAY*9,status:"Submitted",asg:"Unassigned",ups:[],cm:[],fb:null},
+{id:"MRU-1003",cat:"Safety / Harassment",dept:CATS["Safety / Harassment"],desc:"Senior students harassing juniors near the back gate after 9 pm.",loc:"Back gate",pri:"High",anon:1,by:"22K41A0533",at:n-DAY*.3,status:"Submitted",asg:"Unassigned",ups:["c"],cm:[],fb:null},
+{id:"MRU-1004",cat:"IT / Wi-Fi",dept:CATS["IT / Wi-Fi"],desc:"Wi-Fi keeps disconnecting in the library.",loc:"Library, 1st",pri:"Medium",anon:0,by:"22K41A0501",at:n-DAY*5,status:"Resolved",asg:"Mr. Khan",ups:["a"],cm:[{by:"Mr. Khan",t:"Router replaced.",at:n-DAY*3}],fb:null,rat:n-DAY*3}]}}
+function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}}
+const now=()=>Date.now()+S.off*DAY,L=k=>(T[S.lang]||T.en)[k]||T.en[k]||k;
+const ago=t=>{const d=(now()-t)/DAY;return d<1?Math.max(1,Math.round(d*24))+L("h"):Math.floor(d)+L("d")};
+const nm=p=>Array.isArray(p)?p.map(x=>x[0]==="~"?L(x.slice(1)):x).join(" "):p;
+const op=(v,s)=>v.map(x=>`<option value="${E(x)}" ${x===s?"selected":""}>${E(L(x))}</option>`).join("");
+function log(who,act){const p=S.audit.length?S.audit[S.audit.length-1].h:"0",t=now();S.audit.push({t,who,act,h:H(p+t+who+act)})}
+function toast(m){const d=document.createElement("div");d.textContent=m;$("#toast").appendChild(d);setTimeout(()=>d.remove(),3500)}
+function note(...p){S.notes.unshift({t:now(),m:p});if(S.sms)toast("📱 "+L("SMS/WhatsApp (simulated)")+": "+nm(p))}
+const sla=t=>({High:1,Medium:3,Low:7})[t.pri],pt=(id,n)=>S.pts[id]=(S.pts[id]||0)+n;
+function escCheck(){S.tickets.forEach(t=>{if(t.status!=="Resolved"&&!t.esc&&(now()-t.at)/DAY>sla(t)){t.esc=1;log("System","Auto-escalated "+t.id);note(t.id,"~unresolved past deadline, escalated to admin")}})}
+function login(id,role,dept){id=(id||"").trim();if(!/^[A-Za-z0-9]{8,12}$/.test(id)&&!/^[^@\s]+@[^@\s]+\.\w+$/.test(id))return toast(L("Enter a valid university ID (8 to 12 characters) or email"));
+S.me={id,role,dept,name:role==="student"?id:role==="admin"?"Admin":"Staff, "+dept};tab=TABS[role][0];log(S.me.name,"Logged in");save();render()}
+const demo=(r,d)=>login(r==="student"?"22K41A0501":r+"demo01",r,d);
+function logout(){S.me=null;save();render()}
+function keep(){if($("#c-desc"))draft={desc:$("#c-desc").value,cat:$("#c-cat").value,pri:$("#c-pri").value}}
+function mine(){const m=S.me;return S.tickets.filter(t=>m.role==="student"?t.by===m.id:m.role==="staff"?t.dept===m.dept:1)}
+const who=t=>t.anon?L("Anonymous"):t.by;
+function sub(force){const d=$("#c-desc").value.trim(),cat=$("#c-cat").value;if(d.length<10)return toast(L("Please describe the issue in a few more words"));
+const w=d.toLowerCase().match(/\w{4,}/g)||[],sim=S.tickets.filter(t=>t.status!=="Resolved"&&t.cat===cat&&w.filter(x=>t.desc.toLowerCase().includes(x)).length>=2);
+if(sim.length&&!force){$("#dup").innerHTML=`<div class="cd"><b>${L("Similar open complaints found")}</b>`+sim.map(t=>`<div class="s">${t.id}: ${E(t.desc)} <button onclick="up('${t.id}')">${L("Me too")}</button></div>`).join("")+`<button class="p" onclick="sub(1)">${L("Submit anyway")}</button></div>`;return}
+const f=$("#c-img").files[0],mk=img=>{const t={id:"MRU-"+S.n++,cat,dept:CATS[cat],desc:d,loc:[$("#c-blk").value,$("#c-flr").value,$("#c-room").value].filter(Boolean).join(", "),pri:$("#c-pri").value,anon:$("#c-anon").checked?1:0,by:S.me.id,at:now(),status:"Submitted",asg:"Unassigned",ups:[],cm:[],fb:null,img};
+S.tickets.unshift(t);pt(S.me.id,10);log(t.anon?"Anonymous":S.me.id,"Filed "+t.id);note(t.id,"~routed to","~"+t.dept);draft={};tab="mine";save();render();toast(L("Submitted as")+" "+t.id+" (+10 "+L("points")+")")};
+if(f&&f.size<3e5){const r=new FileReader();r.onload=()=>mk(r.result);r.readAsDataURL(f)}else mk(null)}
+function up(id){const t=S.tickets.find(x=>x.id===id),u=S.me.id;if(t.ups.includes(u))return toast(L("Already added"));t.ups.push(u);pt(u,5);save();render()}
+function setSt(id,v){const t=S.tickets.find(x=>x.id===id);t.status=v;if(v==="Resolved")t.rat=now();log(S.me.name,id+" status → "+v);note(id,"~is now","~"+v);save();render()}
+function setAsg(id,v){const t=S.tickets.find(x=>x.id===id);t.asg=v;log(S.me.name,id+" assigned to "+v);save();render()}
+function setDept(id,v){const t=S.tickets.find(x=>x.id===id);t.dept=v;log(S.me.name,id+" rerouted to "+v);save();render()}
+function cmt(id){const i=$("#cm-"+id),v=i.value.trim();if(!v)return;S.tickets.find(x=>x.id===id).cm.push({by:S.me.role==="student"?"Student":(S.me.dept||"Admin"),t:v,at:now()});log(S.me.name,"Comment on "+id);note("~New comment on",id);save();render()}
+function rate(id,n){S.tickets.find(x=>x.id===id).fb=n;pt(S.me.id,5);log(S.me.name,id+" rated "+n+"/5");save();render()}
+function bot(){const v=$("#bot").value.toLowerCase();if(!v)return;let best="",sc=0;for(const c in KW){const n=KW[c].split(" ").filter(w=>v.includes(w)).length;if(n>sc){sc=n;best=c}}
+const urg=URG.split(" ").some(w=>v.includes(w));draft={cat:best||"Infrastructure",desc:$("#bot").value,pri:urg?"High":"Medium"};render();toast(L("Suggested:")+" "+L(draft.cat)+", "+L(draft.pri))}
+function dict(){const R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R)return toast(L("Voice input is not supported in this browser"));const r=new R();r.lang={te:"te-IN",hi:"hi-IN"}[S.lang]||"en-IN";r.onresult=e=>{$("#c-desc").value+=" "+e.results[0][0].transcript};r.onerror=()=>toast(L("Could not capture voice"));r.start();toast(L("Listening…"))}
+function csv(){const rows=[["ID","Category","Dept","Priority","Status","Location","Filed by","Description"]].concat(mine().map(t=>[t.id,t.cat,t.dept,t.pri,t.status,t.loc,t.anon?"Anonymous":t.by,t.desc]));
+const s=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(",")).join("\n"),bad=()=>toast(L("Clipboard blocked in this view"));try{navigator.clipboard.writeText(s).then(()=>toast(L("CSV copied. Paste into Excel or Sheets")),bad)}catch(e){bad()}}
+const badge=p=>p>=60?"🏆 "+L("Champion"):p>=30?"⭐ "+L("Campus Helper"):p>=10?"🌱 "+L("Voice"):L("New");
+function card(t,pub){const m=S.me,st=m.role!=="student"&&!pub,done=t.status==="Resolved";
+return `<div class="cd"><div class="r" style="justify-content:space-between"><b>${t.id} · ${E(L(t.cat))}</b><span><span class="b ${t.pri}">${L(t.pri)}</span> <span class="b">${L(t.status)}</span>${t.esc?` <span class="b High">${L("Escalated")}</span>`:""}</span></div>
+<div>${E(pub?t.desc.slice(0,90)+(t.desc.length>90?"…":""):t.desc)}</div><div class="s">${E(L(t.dept))} · ${E(t.loc||L("No location"))} · ${ago(t.at)} ${L("ago")}${pub?"":" · "+L("by")+" "+E(who(t))} · 👍 ${t.ups.length}</div>
+${t.img&&!pub?`<img class="at" src="${t.img}" alt="">`:""}
+<div class="r" style="margin-top:6px"><button onclick="up('${t.id}')">👍 ${L("Me too")}</button>
+${st?`<select onchange="setSt('${t.id}',this.value)">${op(STS,t.status)}</select><select onchange="setAsg('${t.id}',this.value)">${op(STAFF,t.asg)}</select>`:""}
+${st&&m.role==="admin"?`<select onchange="setDept('${t.id}',this.value)">${op(Object.values(CATS),t.dept)}</select>`:""}</div>
+${pub?"":t.cm.map(c=>`<div class="cm"><b>${E(L(c.by))}</b>: ${E(c.t)}</div>`).join("")}
+${pub?"":`<div class="r np" style="margin-top:6px"><input id="cm-${t.id}" placeholder="${L("Add a comment")}"><button onclick="cmt('${t.id}')" style="flex:0 0 auto">${L("Send")}</button></div>`}
+${!pub&&done&&m.role==="student"?(t.fb?`<div class="s">${L("Your rating:")} ${"★".repeat(t.fb)}</div>`:`<div class="s">${L("Was it fixed properly?")} ${[1,2,3,4,5].map(n=>`<button onclick="rate('${t.id}',${n})">${n}★</button>`).join(" ")}</div>`):""}
+${!pub&&t.fb&&m.role!=="student"?`<div class="s">${L("Student rating:")} ${"★".repeat(t.fb)}</div>`:""}</div>`}
+function list(){const m=S.me;let a=mine().slice();const q=F.q.toLowerCase();a=a.filter(t=>(!F.st||t.status===F.st)&&(!F.cat||t.cat===F.cat)&&(!q||(t.desc+t.id+t.loc).toLowerCase().includes(q)));
+const P={High:0,Medium:1,Low:2};a.sort((x,y)=>(y.esc||0)-(x.esc||0)||P[x.pri]-P[y.pri]||x.at-y.at);if(m.role==="student")a.sort((x,y)=>y.at-x.at);
+$("#list").innerHTML=a.map(t=>card(t)).join("")||`<div class="s">${L("Nothing matches.")}</div>`}
+function filters(){return `<div class="r np"><input placeholder="${L("Search…")}" value="${E(F.q)}" oninput="F.q=this.value;list()"><select onchange="F.st=this.value;list()"><option value="">${L("All statuses")}</option>${op(STS,F.st)}</select><select onchange="F.cat=this.value;list()"><option value="">${L("All categories")}</option>${op(Object.keys(CATS),F.cat)}</select></div><div id="list" style="margin-top:10px"></div>`}
+function view(){const m=S.me,o=Object.keys(CATS);
+if(tab==="file")return `<div class="cd"><b>🤖 ${L("Describe your problem")}</b><div class="s">${L("The assistant suggests a category and priority from your words.")}</div><div class="r"><input id="bot" placeholder="${L("e.g. no water in hostel toilet since morning")}"><button onclick="bot()" style="flex:0 0 auto">${L("Suggest")}</button></div></div>
+<div class="cd"><label>${L("Category (auto-routes to the department)")}</label><select id="c-cat">${op(o,draft.cat)}</select>
+<label>${L("Description")}</label><textarea id="c-desc" rows="4">${E(draft.desc||"")}</textarea><button onclick="dict()" class="np">🎤 ${L("Dictate")}</button>
+<div class="r"><div><label>${L("Block")}</label><input id="c-blk"></div><div><label>${L("Floor")}</label><input id="c-flr"></div><div><label>${L("Room")}</label><input id="c-room"></div><div><label>${L("Priority")}</label><select id="c-pri">${op(PRI,draft.pri||"Medium")}</select></div></div>
+<label>${L("Photo (under 300 KB)")}</label><input type="file" id="c-img" accept="image/*"><label><input type="checkbox" id="c-anon" style="width:auto"> ${L("File anonymously (hidden from staff and feed)")}</label>
+<div id="dup"></div><p><button class="p" onclick="sub()">${L("submit")}</button></p></div>`;
+if(tab==="mine"||tab==="queue"){const p=S.pts[m.id]||0;return (m.role==="student"?`<div class="cd">⭐ ${p} ${L("points")} · ${badge(p)}</div>`:"")+(m.role==="admin"?`<div class="r np"><button onclick="S.off+=3;escCheck();save();render()">⏩ ${L("Simulate +3 days")}</button><button onclick="csv()">${L("Copy CSV")}</button><button onclick="try{print()}catch(e){toast(L('Print blocked in this view'))}">${L("Export PDF")}</button></div>`:"")+filters()}
+if(tab==="feed")return `<div class="s">${L("Public view: names and attachments are hidden.")}</div>`+S.tickets.map(t=>card(t,1)).join("");
+if(tab==="faq")return [["How long until I get a reply?","High priority: 1 day, Medium: 3 days, Low: 7 days. After that the ticket auto-escalates to admin."],["Is anonymous filing really anonymous?","Staff, admin and the public feed never see your ID on anonymous tickets."],["Can I add proof?","Yes, attach a photo of up to 300 KB."],["What if someone already reported it?","Use Me too instead of filing a duplicate."]].map(x=>`<details class="cd"><summary><b>${L(x[0])}</b></summary>${L(x[1])}</details>`).join("");
+if(tab==="stats"){const a=S.tickets,r=a.filter(t=>t.status==="Resolved"),mx=Math.max(1,...o.map(c=>a.filter(t=>t.cat===c).length)),fb=a.filter(t=>t.fb),avg=r.length?(r.reduce((s,t)=>s+(t.rat-t.at),0)/r.length/DAY).toFixed(1):"–";
+return `<div class="r"><div class="cd">${L("Total")}<br><b>${a.length}</b></div><div class="cd">${L("Open")}<br><b>${a.length-r.length}</b></div><div class="cd">${L("Escalated")}<br><b>${a.filter(t=>t.esc).length}</b></div><div class="cd">${L("Avg resolution")}<br><b>${avg} ${L("d")}</b></div><div class="cd">${L("Avg rating")}<br><b>${fb.length?(fb.reduce((s,t)=>s+t.fb,0)/fb.length).toFixed(1):"–"}</b></div></div>
+<div class="cd"><b>${L("Complaints by category")}</b>${o.map(c=>{const n=a.filter(t=>t.cat===c).length;return `<div class="s">${E(L(c))} (${n})</div><div class="bar" style="width:${n/mx*100}%"></div>`}).join("")}</div>`}
+if(tab==="audit"){let p="0",ok=1;S.audit.forEach(e=>{if(H(p+e.t+e.who+e.act)!==e.h)ok=0;p=e.h});
+return `<div class="cd">${ok?"✅ "+L("Hash chain verified: no entry has been altered"):"⚠️ "+L("Chain broken")} <span class="s">(${L("each entry hashes the previous one, a lightweight blockchain-style seal")})</span></div>`+S.audit.slice().reverse().map(e=>`<div class="s">${new Date(e.t).toLocaleString()} · ${E(e.who)} · ${E(e.act)} · #${e.h}</div>`).join("")}}
+function render(){escCheck();const m=S.me,hd=$("#hd");document.documentElement.dataset.theme=S.theme;document.documentElement.lang=S.lang;$("#ti").textContent="🎓 "+L("MRU Complaint Portal");
+hd.innerHTML=`<select onchange="keep();S.lang=this.value;save();render()" style="flex:0 0 auto;width:auto">${[["en","English"],["te","తెలుగు"],["hi","हिन्दी"]].map(l=>`<option value="${l[0]}" ${S.lang===l[0]?"selected":""}>${l[1]}</option>`).join("")}</select>
+<button onclick="S.theme=(S.theme==='dark'||(!S.theme&&matchMedia('(prefers-color-scheme: dark)').matches))?'light':'dark';save();render()" style="flex:0 0 auto">🌓</button>`+
+(m?`<label style="margin:0;flex:0 0 auto"><input type="checkbox" style="width:auto" ${S.sms?"checked":""} onchange="S.sms=this.checked?1:0;save()"> SMS</label><button onclick="showN=!showN;render()" style="flex:0 0 auto">🔔 ${S.notes.length}</button><button onclick="logout()" style="flex:0 0 auto">${L("Log out")}</button>`:"");
+if(!m){$("#app").innerHTML=`<div class="cd" style="max-width:420px;margin:30px auto"><h2 style="margin-top:0">${L("Sign in")}</h2><label>${L("University ID or email")}</label><input id="lid" placeholder="22K41A0501"><label>${L("Role")}</label><select id="lrole" onchange="$('#ldept').style.display=this.value==='staff'?'block':'none'"><option value="student">${L("Student")}</option><option value="staff">${L("Department staff")}</option><option value="admin">${L("Admin")}</option></select>
+<select id="ldept" style="display:none;margin-top:8px">${op(Object.values(CATS))}</select><p><button class="p" onclick="login($('#lid').value,$('#lrole').value,$('#ldept').value)">${L("Sign in")}</button></p>
+<div class="s">${L("Quick demo:")}</div><div class="r"><button onclick="demo('student')">${L("Student")}</button><button onclick="demo('staff','Estate &amp; Maintenance')">${L("Staff")}</button><button onclick="demo('admin')">${L("Admin")}</button></div></div>`;return}
+$("#app").innerHTML=(showN?`<div class="cd np"><b>${L("Notifications")}</b>${S.notes.slice(0,8).map(n=>`<div class="s">${ago(n.t)} ${L("ago")} · ${E(nm(n.m))}</div>`).join("")||`<div class="s">${L("None yet")}</div>`}</div>`:"")+
+`<nav class="np">${TABS[m.role].map(x=>`<button class="${tab===x?"on":""}" onclick="tab='${x}';render()">${L(x)}</button>`).join("")}</nav>`+view();if($("#list"))list()}
+render();
+</script></body></html>
